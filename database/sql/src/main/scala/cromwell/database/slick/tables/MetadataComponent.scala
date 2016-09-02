@@ -4,7 +4,7 @@ import java.sql.Timestamp
 
 import cromwell.database.sql.tables.Metadatum
 
-import scalaz._
+import cats.data.NonEmptyList
 
 trait MetadataComponent {
 
@@ -94,7 +94,7 @@ trait MetadataComponent {
     for {
       m <- metadata
       if m.workflowExecutionUuid === workflowUuid
-      if keys.list.toList map { m.key like _ } reduce (_ || _)
+      if keys.toList map { m.key like _ } reduce (_ || _)
       if !repRequireEmptyJobKey || hasEmptyJobKey(m)
     } yield m
   }
@@ -106,7 +106,7 @@ trait MetadataComponent {
     for {
       metadatum <- metadata
       if metadatum.workflowExecutionUuid === workflowUuid
-      if !(keys.list.toList map { metadatum.key like _ } reduce (_ || _))
+      if !(keys.toList map { metadatum.key like _ } reduce (_ || _))
       if !repRequireEmptyJobKey || hasEmptyJobKey(metadatum)
     } yield metadatum
   }

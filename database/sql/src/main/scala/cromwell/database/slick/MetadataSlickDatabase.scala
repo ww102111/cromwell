@@ -6,7 +6,7 @@ import cromwell.database.sql.MetadataSqlDatabase
 import cromwell.database.sql.tables.{Metadatum, WorkflowMetadataSummary}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scalaz._
+import cats.data.NonEmptyList
 
 trait MetadataSlickDatabase extends MetadataSqlDatabase {
   this: SlickDatabase with SummarizingSlickDatabase =>

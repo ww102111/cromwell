@@ -5,7 +5,7 @@ import java.sql.Timestamp
 import cromwell.database.sql.tables.{Metadatum, WorkflowMetadataSummary}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scalaz.NonEmptyList
+import cats.data.NonEmptyList
 
 trait MetadataSqlDatabase {
   this: SqlDatabase =>
