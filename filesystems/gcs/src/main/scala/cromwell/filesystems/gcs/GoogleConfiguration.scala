@@ -8,9 +8,8 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 import scala.language.postfixOps
-import scalaz.Scalaz._
-import scalaz.Validation.FlatMap._
-import scalaz._
+import cats.implicits._
+import cats.data._
 
 
 final case class GoogleConfiguration private (applicationName: String, authsByName: Map[String, GoogleAuthMode]) {
@@ -19,8 +18,8 @@ final case class GoogleConfiguration private (applicationName: String, authsByNa
     authsByName.get(name) match {
       case None =>
         val knownAuthNames = authsByName.keys.mkString(", ")
-        s"`google` configuration stanza does not contain an auth named '$name'.  Known auth names: $knownAuthNames".failureNel
-      case Some(a) => a.successNel
+        s"`google` configuration stanza does not contain an auth named '$name'.  Known auth names: $knownAuthNames".invalidNel
+      case Some(a) => a.validNel
     }
   }
 }
@@ -56,7 +55,7 @@ object GoogleConfiguration {
         cfg => RefreshTokenMode(name, cfg.getString("client-id"), cfg.getString("client-secret"))
       }
 
-      def applicationDefaultAuth(name: String) = ApplicationDefaultMode(name, GoogleScopes).successNel[String]
+      def applicationDefaultAuth(name: String): ErrorOr[GoogleAuthMode] = ApplicationDefaultMode(name, GoogleScopes).validNel
 
       val name = authConfig.getString("name")
       val scheme = authConfig.getString("scheme")
@@ -65,7 +64,7 @@ object GoogleConfiguration {
         case "user_account" => userAccountAuth(authConfig, name)
         case "refresh_token" => refreshTokenAuth(authConfig, name)
         case "application_default" => applicationDefaultAuth(name)
-        case wut => s"Unsupported authentication scheme: $wut".failureNel
+        case wut => s"Unsupported authentication scheme: $wut".invalidNel
       }
     }
 
@@ -75,9 +74,9 @@ object GoogleConfiguration {
     def uniqueAuthNames(list: List[GoogleAuthMode]): ErrorOr[Unit] = {
       val duplicateAuthNames = list.groupBy(_.name) collect { case (n, as) if as.size > 1 => n }
       if (duplicateAuthNames.nonEmpty) {
-        ("Duplicate auth names: " + duplicateAuthNames.mkString(", ")).failureNel
+        ("Duplicate auth names: " + duplicateAuthNames.mkString(", ")).invalidNel
       } else {
-        ().successNel
+        ().validNel
       }
     }
 

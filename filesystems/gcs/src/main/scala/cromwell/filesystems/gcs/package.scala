@@ -1,8 +1,8 @@
 package cromwell.filesystems
 
-import scalaz.ValidationNel
+import cats.data._
 
 package object gcs {
-  type ErrorOr[+A] = ValidationNel[String, A]
+  type ErrorOr[+A] = ValidatedNel[String, A]
   type RefreshToken = String
 }

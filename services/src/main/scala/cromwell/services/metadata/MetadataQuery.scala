@@ -6,7 +6,7 @@ import cromwell.core.WorkflowId
 import org.slf4j.LoggerFactory
 import wdl4s.values.{WdlBoolean, WdlFloat, WdlInteger, WdlValue}
 
-import scalaz.NonEmptyList
+import cats.data.NonEmptyList
 
 case class MetadataJobKey(callFqn: String, index: Option[Int], attempt: Int)
 

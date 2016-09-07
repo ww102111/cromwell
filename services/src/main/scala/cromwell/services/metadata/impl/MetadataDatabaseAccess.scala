@@ -2,6 +2,9 @@ package cromwell.services.metadata.impl
 
 import java.time.OffsetDateTime
 
+import cats.Semigroup
+import cats.implicits._
+import cats.data._
 import cromwell.core.{WorkflowId, WorkflowMetadataKeys, WorkflowState}
 import cromwell.database.sql.SqlConverters._
 import cromwell.database.sql.tables.{Metadatum, WorkflowMetadataSummary}
@@ -10,13 +13,11 @@ import cromwell.services.metadata.MetadataService.{QueryMetadata, WorkflowQueryR
 import cromwell.services.metadata._
 
 import scala.concurrent.{ExecutionContext, Future}
-import scalaz.Scalaz._
-import scalaz.{NonEmptyList, Semigroup}
 
 object MetadataDatabaseAccess {
 
   private lazy val WorkflowMetadataSummarySemigroup = new Semigroup[WorkflowMetadataSummary] {
-    override def append(summary1: WorkflowMetadataSummary,
+    override def combine(summary1: WorkflowMetadataSummary,
                         summary2: => WorkflowMetadataSummary): WorkflowMetadataSummary = {
       // Resolve the status if both `this` and `that` have defined statuses.  This will evaluate to `None`
       // if one or both of the statuses is not defined.
@@ -128,7 +129,7 @@ trait MetadataDatabaseAccess {
   def queryWorkflowOutputs(id: WorkflowId)
                           (implicit ec: ExecutionContext): Future[Seq[MetadataEvent]] = {
     val uuid = id.id.toString
-    databaseInterface.queryMetadataEventsWithWildcardKeys(uuid, s"${WorkflowMetadataKeys.Outputs}:%".wrapNel, requireEmptyJobKey = true).
+    databaseInterface.queryMetadataEventsWithWildcardKeys(uuid, NonEmptyList.of(s"${WorkflowMetadataKeys.Outputs}:%"), requireEmptyJobKey = true).
       map(metadataToMetadataEvents(id))
   }
 
@@ -136,7 +137,7 @@ trait MetadataDatabaseAccess {
                (implicit ec: ExecutionContext): Future[Seq[MetadataEvent]] = {
     import cromwell.services.metadata.CallMetadataKeys._
 
-    val keys = NonEmptyList(Stdout, Stderr, BackendLogsPrefix + ":%")
+    val keys = NonEmptyList.of(Stdout, Stderr, BackendLogsPrefix + ":%")
     databaseInterface.queryMetadataEventsWithWildcardKeys(id.id.toString, keys, requireEmptyJobKey = false) map metadataToMetadataEvents(id)
   }
 
