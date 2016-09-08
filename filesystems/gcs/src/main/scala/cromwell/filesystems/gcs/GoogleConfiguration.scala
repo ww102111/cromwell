@@ -8,8 +8,11 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 import scala.language.postfixOps
+import cats._
 import cats.implicits._
-import cats.data._
+import cats.instances.all._
+// import cats.data._
+// import cats.syntax.cartesian._
 
 
 final case class GoogleConfiguration private (applicationName: String, authsByName: Map[String, GoogleAuthMode]) {
@@ -87,7 +90,7 @@ object GoogleConfiguration {
     } match {
       case Success(r) => r
       case Failure(f) =>
-        val errorMessages = f.list.toList.mkString(", ")
+        val errorMessages = f.toList.mkString(", ")
         log.error(errorMessages)
         throw new ConfigValidationException("Google", errorMessages)
     }
