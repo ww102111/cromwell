@@ -103,7 +103,7 @@ There is a [Cromwell gitter channel](https://gitter.im/broadinstitute/cromwell) 
 
 The following is the toolchain used for development of Cromwell.  Other versions may work, but these are recommended.
 
-* [Scala 2.11.7](http://www.scala-lang.org/news/2.11.7/)
+* [Scala 2.11.8](http://www.scala-lang.org/news/2.11.8/)
 * [SBT 0.13.8](https://github.com/sbt/sbt/releases/tag/v0.13.8)
 * [Java 8](http://www.oracle.com/technetwork/java/javase/overview/java8-2100321.html)
 

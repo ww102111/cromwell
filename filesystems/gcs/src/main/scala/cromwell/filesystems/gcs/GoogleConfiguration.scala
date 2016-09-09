@@ -8,11 +8,11 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 import scala.language.postfixOps
-import cats._
+
+import cats.data.Validated._
 import cats.implicits._
-import cats.instances.all._
-// import cats.data._
-// import cats.syntax.cartesian._
+import cats.syntax.AllSyntax
+import cats.instances.AllInstances
 
 
 final case class GoogleConfiguration private (applicationName: String, authsByName: Map[String, GoogleAuthMode]) {
@@ -83,7 +83,13 @@ object GoogleConfiguration {
       }
     }
 
-    (appName |@| errorOrAuthList) { (_, _) } flatMap { case (name, list) =>
+    val foo = "foo".validNel[String]
+    val bar = "bar".validNel[String]
+
+    foo |@| bar
+
+    //appName |@| errorOrAuthList //{ (_, _) } flatMap { case (name, list) =>
+    /*
       uniqueAuthNames(list) map { _ =>
         GoogleConfiguration(name, list map { a => a.name -> a } toMap)
       }
@@ -94,5 +100,7 @@ object GoogleConfiguration {
         log.error(errorMessages)
         throw new ConfigValidationException("Google", errorMessages)
     }
+    */
+    ???
   }
 }
