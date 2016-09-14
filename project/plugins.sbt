@@ -9,3 +9,11 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.7.1")
 addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.3")
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.3.5")
 addSbtPlugin("org.scoverage" % "sbt-coveralls" % "1.1.0")
+
+addSbtPlugin("com.lightbend.cinnamon" % "sbt-cinnamon" % "2.0.0")
+
+credentials += Credentials(Path.userHome / ".lightbend" / "commercial.credentials")
+resolvers += "com-mvn" at "https://repo.lightbend.com/commercial-releases/"
+resolvers += Resolver.url("com-ivy", url("https://repo.lightbend.com/commercial-releases/"))(Resolver.ivyStylePatterns)
+resolvers += Resolver.url("lightbend-commercial", url("https://repo.lightbend.com/commercial-releases"))(Resolver.ivyStylePatterns)
+

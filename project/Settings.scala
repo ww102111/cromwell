@@ -3,6 +3,7 @@ import Merging.customMergeStrategy
 import Publishing._
 import Testing._
 import Version._
+import com.lightbend.cinnamon.sbt.Cinnamon.CinnamonKeys._
 import sbt.Keys._
 import sbt._
 import sbtassembly.AssemblyPlugin.autoImport._
@@ -10,10 +11,10 @@ import sbtrelease.ReleasePlugin
 import sbtdocker.DockerPlugin.autoImport._
 
 object Settings {
-
   val commonResolvers = List(
     "Broad Artifactory Releases" at "https://artifactory.broadinstitute.org/artifactory/libs-release/",
-    "Broad Artifactory Snapshots" at "https://artifactory.broadinstitute.org/artifactory/libs-snapshot/"
+    "Broad Artifactory Snapshots" at "https://artifactory.broadinstitute.org/artifactory/libs-snapshot/",
+    "takipi-sdk" at "https://dl.bintray.com/takipi/maven"
   )
 
   /*
@@ -73,7 +74,12 @@ object Settings {
     scalaVersion := "2.11.8",
     resolvers ++= commonResolvers,
     scalacOptions ++= compilerSettings,
-    parallelExecution := false
+    parallelExecution := false,
+    cinnamon in run := true,
+    cinnamon in test := true,
+    cinnamonLogLevel := "INFO",
+    fork in run := true,
+    javaOptions in run += "-agentlib:TakipiAgent"
   )
 
   val coreSettings = List(
