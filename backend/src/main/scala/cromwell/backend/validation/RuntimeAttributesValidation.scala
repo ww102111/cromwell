@@ -10,7 +10,7 @@ import wdl4s.types.{WdlBooleanType, WdlIntegerType, WdlType}
 import wdl4s.values._
 
 import scala.util.{Failure, Success}
-import scalaz.Scalaz._
+import cats.implicits._
 
 object RuntimeAttributesValidation {
 
@@ -48,22 +48,22 @@ object RuntimeAttributesValidation {
                                         missingValidationMessage: String): ErrorOr[T] = {
     valueOption match {
       case Some(value) =>
-        validation.validateValue.applyOrElse(value, (_: Any) => missingValidationMessage.failureNel)
+        validation.validateValue.applyOrElse(value, (_: Any) => missingValidationMessage.invalidNel)
       case None => onMissingValue
     }
   }
 
   def validateInt(value: WdlValue): ErrorOr[Int] = {
     WdlIntegerType.coerceRawValue(value) match {
-      case scala.util.Success(WdlInteger(i)) => i.intValue.successNel
-      case _ => s"Could not coerce ${value.valueString} into an integer".failureNel
+      case scala.util.Success(WdlInteger(i)) => i.intValue.validNel
+      case _ => s"Could not coerce ${value.valueString} into an integer".invalidNel
     }
   }
 
   def validateBoolean(value: WdlValue): ErrorOr[Boolean] = {
     WdlBooleanType.coerceRawValue(value) match {
-      case scala.util.Success(WdlBoolean(b)) => b.booleanValue.successNel
-      case _ => s"Could not coerce ${value.valueString} into a boolean".failureNel
+      case scala.util.Success(WdlBoolean(b)) => b.booleanValue.validNel
+      case _ => s"Could not coerce ${value.valueString} into a boolean".invalidNel
     }
   }
 
@@ -266,7 +266,7 @@ trait RuntimeAttributesValidation[ValidatedType] {
     *
     * @return Wrapped failureMessage.
     */
-  protected final lazy val failureWithMessage: ErrorOr[ValidatedType] = failureMessage.failureNel
+  protected final lazy val failureWithMessage: ErrorOr[ValidatedType] = failureMessage.invalidNel
 
   /**
     * Runs this validation on the value matching key.
@@ -297,7 +297,7 @@ trait RuntimeAttributesValidation[ValidatedType] {
     */
   def validateOptionalExpression(wdlExpressionMaybe: Option[WdlExpression]): Boolean = {
     wdlExpressionMaybe match {
-      case None => staticDefaultOption.isDefined || validateNone.isSuccess
+      case None => staticDefaultOption.isDefined || validateNone.isValid
       case Some(wdlExpression) =>
         /*
         TODO: BUG:
@@ -377,5 +377,5 @@ trait OptionalRuntimeAttributesValidation[ValidatedType] extends RuntimeAttribut
     override def apply(wdlValue: WdlValue) = validateOption.apply(wdlValue).map(Option.apply)
   }
 
-  override final protected lazy val validateNone = None.successNel[String]
+  override final protected lazy val validateNone = None.validNel[String]
 }

@@ -4,7 +4,7 @@ import wdl4s.types.{WdlBooleanType, WdlStringType}
 import wdl4s.values.{WdlBoolean, WdlString}
 
 import scala.util.Try
-import scalaz.Scalaz._
+import cats.implicits._
 
 /**
   * Validates the "failOnStderr" runtime attribute as a Boolean or a String 'true' or 'false', returning the value as a
@@ -36,8 +36,8 @@ class FailOnStderrValidation extends RuntimeAttributesValidation[Boolean] {
   override def coercion = Seq(WdlBooleanType, WdlStringType)
 
   override protected def validateValue = {
-    case WdlBoolean(value) => value.successNel
-    case WdlString(value) if Try(value.toBoolean).isSuccess => value.toBoolean.successNel
+    case WdlBoolean(value) => value.validNel
+    case WdlString(value) if Try(value.toBoolean).isSuccess => value.toBoolean.validNel
   }
 
   override def validateExpression = {

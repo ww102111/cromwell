@@ -3,7 +3,7 @@ package cromwell.backend.validation
 import wdl4s.types.WdlIntegerType
 import wdl4s.values.WdlInteger
 
-import scalaz.Scalaz._
+import cats.implicits._
 
 /**
   * Validates the "cpu" runtime attribute an Integer greater than 0, returning the value as an `Int`.
@@ -39,7 +39,7 @@ class CpuValidation extends RuntimeAttributesValidation[Int] {
   override protected def validateValue = {
     case wdlValue if WdlIntegerType.coerceRawValue(wdlValue).isSuccess =>
       WdlIntegerType.coerceRawValue(wdlValue).get match {
-        case WdlInteger(value) => if (value.toInt <= 0) wrongAmountMsg.failureNel else value.toInt.successNel
+        case WdlInteger(value) => if (value.toInt <= 0) wrongAmountMsg.invalidNel else value.toInt.validNel
       }
   }
 

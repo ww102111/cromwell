@@ -1,13 +1,13 @@
 package cromwell.backend.validation
 
+import cats.data.Validated.{Invalid, Valid}
 import cromwell.backend.RuntimeAttributeDefinition
 import cromwell.core._
 import lenthall.exception.MessageAggregation
 import org.slf4j.Logger
-import wdl4s.types.WdlType
 import wdl4s.values.WdlValue
-
-import scalaz.{Failure, Success}
+import cats.implicits._
+import cats.data.Validated._
 
 final case class ValidatedRuntimeAttributes(attributes: Map[String, Any])
 
@@ -54,11 +54,11 @@ trait ValidatedRuntimeAttributesBuilder {
 
     val runtimeAttributesErrorOr: ErrorOr[ValidatedRuntimeAttributes] = validate(attrs)
     runtimeAttributesErrorOr match {
-      case Success(runtimeAttributes) => runtimeAttributes
-      case Failure(nel) => throw new RuntimeException with MessageAggregation {
+      case Valid(runtimeAttributes) => runtimeAttributes
+      case Invalid(nel) => throw new RuntimeException with MessageAggregation {
         override def exceptionContext: String = "Runtime attribute validation failed"
 
-        override def errorMessages: Traversable[String] = nel.list.toList
+        override def errorMessages: Traversable[String] = nel.toList
       }
     }
   }
@@ -68,14 +68,12 @@ trait ValidatedRuntimeAttributesBuilder {
     val errorsOrValuesMap: Seq[(String, ErrorOr[Any])] =
       validationsForValues.map(validation => validation.key -> validation.validate(values))
 
-    import scalaz.Scalaz._
-
-    val emptyResult: ErrorOr[List[(String, Any)]] = List.empty[(String, Any)].success
+    val emptyResult: ErrorOr[List[(String, Any)]] = List.empty[(String, Any)].validNel
     val validationResult = errorsOrValuesMap.foldLeft(emptyResult) { (agg, errorOrValue) =>
-      agg +++ {
+      agg |+| {
         errorOrValue match {
-          case (key, Success(value)) => List(key -> value).success
-          case (key, Failure(nel)) => nel.failure
+          case (key, Valid(value)) => List(key -> value).valid
+          case (key, Invalid(nel)) => nel.invalid
         }
       }
     }
