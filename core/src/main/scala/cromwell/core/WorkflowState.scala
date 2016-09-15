@@ -16,7 +16,7 @@ object WorkflowState {
     throw new NoSuchElementException(s"No such WorkflowState: $str"))
 
   implicit val WorkflowStateSemigroup = new Semigroup[WorkflowState] {
-    override def combine(f1: WorkflowState, f2: => WorkflowState): WorkflowState = f1.combine(f2)
+    override def combine(f1: WorkflowState, f2: WorkflowState): WorkflowState = f1.combine(f2)
   }
 
   implicit val WorkflowStateOrdering = Ordering.by { self: WorkflowState => self.ordinal }

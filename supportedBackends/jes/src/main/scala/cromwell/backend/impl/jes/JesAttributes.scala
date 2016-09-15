@@ -11,9 +11,11 @@ import lenthall.config.ValidatedConfig._
 import wdl4s.ExceptionWithErrors
 
 import scala.language.postfixOps
-import scalaz.Scalaz._
-import scalaz.Validation.FlatMap._
-import scalaz._
+import cats.data._
+import cats.data.Validated._
+import cats.implicits._
+import cats.syntax.AllSyntax
+import cats.instances.AllInstances
 
 case class JesAttributes(project: String,
                          genomicsAuth: GoogleAuthMode,
@@ -48,8 +50,8 @@ object JesAttributes {
   def apply(googleConfig: GoogleConfiguration, backendConfig: Config): JesAttributes = {
     backendConfig.warnNotRecognized(jesKeys, context)
 
-    val project: ErrorOr[String] = backendConfig.validateString("project")
-    val executionBucket: ErrorOr[String] = backendConfig.validateString("root")
+    val project: ValidatedNel[String, String] = backendConfig.validateString("project")
+    val executionBucket: ValidatedNel[String, String] = backendConfig.validateString("root")
     val endpointUrl: ErrorOr[URL] = backendConfig.validateURL("genomics.endpoint-url")
     val maxPollingInterval: Int = backendConfig.getIntOption("maximum-polling-interval").getOrElse(600)
     val genomicsAuthName: ErrorOr[String] = backendConfig.validateString("genomics.auth")

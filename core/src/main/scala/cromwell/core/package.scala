@@ -10,7 +10,7 @@ import scalaz._
 package object core {
   case class CallContext(root: Path, stdout: String, stderr: String)
 
-  type ErrorOr[+A] = ValidationNel[String, A]
+  type ErrorOr[A] = cats.data.Validated[cats.data.NonEmptyList[String], A]
   type LocallyQualifiedName = String
   type FullyQualifiedName = String
   type WorkflowOutputs = Map[FullyQualifiedName, JobOutput]

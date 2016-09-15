@@ -8,7 +8,7 @@ import cromwell.services.ServiceRegistryActor.ServiceRegistryMessage
 import wdl4s.values._
 
 import scala.language.postfixOps
-import scalaz.NonEmptyList
+import cats.data.NonEmptyList
 
 object MetadataService {
 

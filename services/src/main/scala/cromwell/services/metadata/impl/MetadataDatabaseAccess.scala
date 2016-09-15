@@ -18,7 +18,7 @@ object MetadataDatabaseAccess {
 
   private lazy val WorkflowMetadataSummarySemigroup = new Semigroup[WorkflowMetadataSummary] {
     override def combine(summary1: WorkflowMetadataSummary,
-                        summary2: => WorkflowMetadataSummary): WorkflowMetadataSummary = {
+                         summary2: WorkflowMetadataSummary): WorkflowMetadataSummary = {
       // Resolve the status if both `this` and `that` have defined statuses.  This will evaluate to `None`
       // if one or both of the statuses is not defined.
       val resolvedStatus = for {
