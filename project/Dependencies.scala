@@ -23,6 +23,7 @@ object Dependencies {
   private val baseDependencies = List(
     "org.broadinstitute" %% "lenthall" % lenthallV,
     "org.typelevel" %% "cats" % catsV,
+    "com.github.benhutchison" %% "mouse" % "0.5",
     "org.scalatest" %% "scalatest" % "3.0.0" % Test,
     "org.specs2" %% "specs2" % "3.7" % Test
   )

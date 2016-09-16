@@ -8,7 +8,11 @@ import cromwell.util.FileUtil._
 import lenthall.exception.MessageAggregation
 
 import scala.util.{Failure, Success, Try}
-import scalaz.Scalaz._
+
+import cats.data.Validated._
+import cats.implicits._
+import cats.syntax.AllSyntax
+import cats.instances.AllInstances
 
 sealed abstract class CromwellCommandLine
 case object UsageAndExit extends CromwellCommandLine
@@ -42,15 +46,14 @@ object RunSingle {
 
     val sourceFiles = (wdl |@| inputsJson |@| optionsJson) { WorkflowSourceFiles.apply }
 
-    import scalaz.Validation.FlatMap._
     val runSingle = for {
       sources <- sourceFiles
       _ <- writeableMetadataPath(metadataPath)
     } yield RunSingle(wdlPath, sources, inputsPath, optionsPath, metadataPath)
 
     runSingle match {
-      case scalaz.Success(r) => r
-      case scalaz.Failure(nel) => throw new RuntimeException with MessageAggregation {
+      case Valid(r) => r
+      case Invalid(nel) => throw new RuntimeException with MessageAggregation {
         override def exceptionContext: String = "ERROR: Unable to run Cromwell:"
         override def errorMessages: Traversable[String] = nel.list.toList
       }

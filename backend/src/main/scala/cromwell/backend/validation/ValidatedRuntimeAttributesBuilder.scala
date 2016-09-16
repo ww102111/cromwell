@@ -7,7 +7,6 @@ import lenthall.exception.MessageAggregation
 import org.slf4j.Logger
 import wdl4s.values.WdlValue
 import cats.implicits._
-import cats.data.Validated._
 
 final case class ValidatedRuntimeAttributes(attributes: Map[String, Any])
 
