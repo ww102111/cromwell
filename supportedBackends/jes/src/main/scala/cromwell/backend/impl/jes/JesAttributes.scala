@@ -57,15 +57,15 @@ object JesAttributes {
     val genomicsAuthName: ErrorOr[String] = backendConfig.validateString("genomics.auth")
     val gcsFilesystemAuthName: ErrorOr[String] = backendConfig.validateString("filesystems.gcs.auth")
 
-    (project |@| executionBucket |@| endpointUrl |@| genomicsAuthName |@| gcsFilesystemAuthName) {
+    (project |@| executionBucket |@| endpointUrl |@| genomicsAuthName |@| gcsFilesystemAuthName) map {
       (_, _, _, _, _)
-    } flatMap { case (p, b, u, genomicsName, gcsName) =>
-      (googleConfig.auth(genomicsName) |@| googleConfig.auth(gcsName)) { case (genomicsAuth, gcsAuth) =>
+    } andThen { case (p, b, u, genomicsName, gcsName) =>
+      (googleConfig.auth(genomicsName) |@| googleConfig.auth(gcsName)) map { case (genomicsAuth, gcsAuth) =>
         JesAttributes(p, genomicsAuth, gcsAuth, b, u, maxPollingInterval)
       }
     } match {
-      case Success(r) => r
-      case Failure(f) =>
+      case Valid(r) => r
+      case Invalid(f) =>
         throw new IllegalArgumentException with ExceptionWithErrors {
           override val message = "Jes Configuration is not valid: Errors"
           override val errors = f
