@@ -1,11 +1,9 @@
 package cromwell
 
-import lenthall.exception.ThrowableAggregation
 import java.nio.file.Path
 
-import wdl4s.values.{SymbolHash, WdlValue}
-
-import scalaz._
+import lenthall.exception.ThrowableAggregation
+import wdl4s.values.WdlValue
 
 package object core {
   case class CallContext(root: Path, stdout: String, stderr: String)
