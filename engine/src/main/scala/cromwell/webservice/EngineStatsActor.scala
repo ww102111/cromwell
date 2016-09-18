@@ -3,6 +3,7 @@ package cromwell.webservice
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import cromwell.core.Dispatcher
 import cromwell.webservice.EngineStatsActor._
+import scala.concurrent.duration._
 
 /**
   * An imperfect collector of the number of workflows & jobs active in the system. Takes a list of WorkflowActor
@@ -12,7 +13,7 @@ import cromwell.webservice.EngineStatsActor._
   * Because of the vagaries of timing, etc this is intended to give a rough idea of what's going on instead of
   * being a ground truth.
   */
-final case class EngineStatsActor(workflowActors: List[ActorRef], replyTo: ActorRef) extends Actor with ActorLogging {
+final case class EngineStatsActor(workflowActors: List[ActorRef], replyTo: ActorRef, timeout: FiniteDuration) extends Actor with ActorLogging {
   implicit val ec = context.dispatcher
 
   private var jobCounts = Map.empty[ActorRef, Int]
@@ -22,7 +23,7 @@ final case class EngineStatsActor(workflowActors: List[ActorRef], replyTo: Actor
     Instead of waiting longingly, watching a mailbox which might never receive some love instead wait
     a specified period of time and assume anything which was going to reply already has
   */
-  val scheduledMsg = context.system.scheduler.scheduleOnce(MaxTimeToWait, self, ShutItDown)
+  val scheduledMsg = context.system.scheduler.scheduleOnce(timeout, self, ShutItDown)
 
   if (workflowActors.isEmpty) reportStats()
   else workflowActors foreach { _ ! JobCountQuery }
@@ -44,10 +45,11 @@ final case class EngineStatsActor(workflowActors: List[ActorRef], replyTo: Actor
 }
 
 object EngineStatsActor {
-  import scala.concurrent.duration._
   import scala.language.postfixOps
 
-  def props(workflowActors: List[ActorRef], replyTo: ActorRef) = Props(EngineStatsActor(workflowActors, replyTo)).withDispatcher(Dispatcher.ApiDispatcher)
+  def props(workflowActors: List[ActorRef], replyTo: ActorRef, timeout: FiniteDuration = MaxTimeToWait) = {
+    Props(EngineStatsActor(workflowActors, replyTo, timeout)).withDispatcher(Dispatcher.ApiDispatcher)
+  }
 
   sealed abstract class EngineStatsActorMessage
   private case object ShutItDown extends EngineStatsActorMessage
