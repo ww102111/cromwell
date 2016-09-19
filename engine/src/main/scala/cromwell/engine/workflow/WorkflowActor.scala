@@ -207,7 +207,7 @@ class WorkflowActor(val workflowId: WorkflowId,
         jobStoreActor,
         callCacheReadActor,
         initializationData,
-        restarting = restarting), name = s"WorkflowExecutionActor-$workflowId")
+        restarting = restarting), name = s"WorkflowExecutionActor")
 
       executionActor ! ExecuteWorkflowCommand
 

@@ -260,7 +260,7 @@ final case class WorkflowExecutionActor(workflowId: WorkflowId,
   val MaxRetries = ConfigFactory.load().getIntOption("system.max-retries") match {
     case Some(value) => value
     case None =>
-      workflowLogger.warn(s"Failed to load the max-retries value from the configuration. Defaulting back to a value of '$DefaultMaxRetriesFallbackValue'.")
+      workflowLogger.warn("Failed to load the max-retries value from the configuration. Defaulting back to a value of '{}'.", DefaultMaxRetriesFallbackValue)
       DefaultMaxRetriesFallbackValue
   }
 
@@ -333,7 +333,7 @@ final case class WorkflowExecutionActor(workflowId: WorkflowId,
       pushFailedJobMetadata(jobKey, returnCode, reason, retryableFailure = false)
       handleNonRetryableFailure(stateData, jobKey, reason)
     case Event(FailedRetryableResponse(jobKey, reason, returnCode), stateData) =>
-      workflowLogger.warn(s"Job ${jobKey.tag} failed with a retryable failure: ${reason.getMessage}")
+      workflowLogger.warn("Job {} failed with a retryable failure: {}", arg1 = jobKey.tag, arg2 = reason.getMessage)
       pushFailedJobMetadata(jobKey, None, reason, retryableFailure = true)
       handleRetryableFailure(jobKey, reason, returnCode)
     case Event(JobInitializationFailed(jobKey, reason), stateData) =>
@@ -422,20 +422,20 @@ final case class WorkflowExecutionActor(workflowId: WorkflowId,
     // We start with index 1 for #attempts, hence invariant breaks only if jobKey.attempt > MaxRetries
     if (jobKey.attempt <= MaxRetries) {
       val newJobKey = jobKey.copy(attempt = jobKey.attempt + 1)
-      workflowLogger.info(s"Retrying job execution for ${newJobKey.tag}")
+      workflowLogger.info("Retrying job execution for {}", newJobKey.tag)
       /** Currently, we update the status of the old key to Preempted, and add a new entry (with the #attempts incremented by 1)
         * to the execution store with status as NotStarted. This allows startRunnableCalls to re-execute this job */
       val executionDiff = WorkflowExecutionDiff(Map(jobKey -> ExecutionStatus.Preempted, newJobKey -> ExecutionStatus.NotStarted))
       val newData = stateData.mergeExecutionDiff(executionDiff)
       stay() using startRunnableScopes(newData)
     } else {
-      workflowLogger.warn(s"Exhausted maximum number of retries for job ${jobKey.tag}. Failing.")
+      workflowLogger.warn("Exhausted maximum number of retries for job {}. Failing.", jobKey.tag)
       goto(WorkflowExecutionFailedState) using stateData.mergeExecutionDiff(WorkflowExecutionDiff(Map(jobKey -> ExecutionStatus.Failed)))
     }
   }
 
   private def handleJobSuccessful(jobKey: JobKey, outputs: JobOutputs, data: WorkflowExecutionActorData) = {
-    workflowLogger.info(s"Job ${jobKey.tag} succeeded!")
+    workflowLogger.debug("Job {} succeeded!", jobKey.tag)
     val newData = data.jobExecutionSuccess(jobKey, outputs)
 
     newData.workflowCompletionStatus match {
@@ -526,7 +526,7 @@ final case class WorkflowExecutionActor(workflowId: WorkflowId,
     val runnableScopes = data.executionStore.runnableScopes.toList
     val runnableCalls = runnableScopes.view collect { case k if k.scope.isInstanceOf[Call] => k } sortBy { k =>
       (k.scope.fullyQualifiedName, k.index.getOrElse(-1)) } map { _.tag }
-    if (runnableCalls.nonEmpty) workflowLogger.info("Starting calls: " + runnableCalls.mkString(", "))
+    if (runnableCalls.nonEmpty) workflowLogger.info("Starting calls: {}", runnableCalls.mkString(", "))
 
     // Each process returns a Try[WorkflowExecutionDiff], which, upon success, contains potential changes to be made to the execution store.
     val executionDiffs = runnableScopes map {
