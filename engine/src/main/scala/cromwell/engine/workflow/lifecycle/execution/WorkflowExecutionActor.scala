@@ -435,7 +435,7 @@ final case class WorkflowExecutionActor(workflowId: WorkflowId,
   }
 
   private def handleJobSuccessful(jobKey: JobKey, outputs: JobOutputs, data: WorkflowExecutionActorData) = {
-    workflowLogger.debug("Job {} succeeded!", jobKey.tag)
+    workflowLogger.debug("Job {} succeeded!", argument = jobKey.tag)
     val newData = data.jobExecutionSuccess(jobKey, outputs)
 
     newData.workflowCompletionStatus match {
