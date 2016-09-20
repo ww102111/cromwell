@@ -785,4 +785,3 @@ definitions:
       jobs:
         type: integer
         description: The number of currently running jobs
-        
